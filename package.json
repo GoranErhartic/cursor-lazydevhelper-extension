@@ -3,7 +3,7 @@
   "displayName": "LazyDevHelper",
   "description": "Right-click AI actions on selected code: analyze, review, and simplify.",
   "version": "0.1.0",
-  "publisher": "goranerhartic",
+  "publisher": "LazyDevAI",
   "icon": "image/icon.png",
   "license": "MIT",
   "packageManager": "pnpm@12.4.1",
