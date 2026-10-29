@@ -1,0 +1,146 @@
+{
+  "name": "lazydevhelper",
+  "displayName": "LazyDevHelper",
+  "description": "Right-click AI actions on selected code: analyze, review, and simplify.",
+  "version": "0.1.0",
+  "publisher": "goranerhartic",
+  "icon": "image/icon.png",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:lazydev.analyze",
+    "onCommand:lazydev.review",
+    "onCommand:lazydev.simplify",
+    "onCommand:lazydev.configureProvider",
+    "onCommand:lazydev.selectModel",
+    "onCommand:lazydev.clearKey"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "lazydev.analyze",
+        "title": "Analyze Code",
+        "category": "LazyDevHelper"
+      },
+      {
+        "command": "lazydev.review",
+        "title": "Review Code",
+        "category": "LazyDevHelper"
+      },
+      {
+        "command": "lazydev.simplify",
+        "title": "Simplify Code",
+        "category": "LazyDevHelper"
+      },
+      {
+        "command": "lazydev.configureProvider",
+        "title": "Configure API Key & Provider",
+        "category": "LazyDevHelper"
+      },
+      {
+        "command": "lazydev.selectModel",
+        "title": "Select Model",
+        "category": "LazyDevHelper"
+      },
+      {
+        "command": "lazydev.clearKey",
+        "title": "Clear Stored API Key",
+        "category": "LazyDevHelper"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "lazydev.submenu",
+          "group": "lazydev",
+          "when": "editorHasSelection"
+        }
+      ],
+      "lazydev.submenu": [
+        {
+          "command": "lazydev.analyze",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "lazydev.review",
+          "group": "1_actions@2"
+        },
+        {
+          "command": "lazydev.simplify",
+          "group": "1_actions@3"
+        },
+        {
+          "command": "lazydev.configureProvider",
+          "group": "2_config@1"
+        },
+        {
+          "command": "lazydev.selectModel",
+          "group": "2_config@2"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "lazydev.submenu",
+        "label": "LazyDevHelper"
+      }
+    ],
+    "configuration": {
+      "title": "LazyDevHelper",
+      "properties": {
+        "lazydev.provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "cursor"
+          ],
+          "default": "openai",
+          "description": "LLM provider for code actions."
+        },
+        "lazydev.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model ID to use (set via Select Model after validating your API key)."
+        },
+        "lazydev.maxSelectionChars": {
+          "type": "number",
+          "default": 50000,
+          "minimum": 1000,
+          "description": "Maximum number of characters in a selection to send to the model."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run build",
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run && node test/smoke-commands.js",
+    "package": "vsce package --allow-missing-repository --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.16.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@cursor/sdk": "^1.2.0"
+  }
+}

@@ -1,0 +1,6 @@
+allowBuilds:
+  '@vscode/vsce-sign': true
+  esbuild: true
+  keytar: true
+overrides:
+  '@azure/msal-node': ^7.1.0
