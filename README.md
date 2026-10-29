@@ -39,10 +39,10 @@ pnpm test
 
 ## Publishing (Open VSX)
 
-The extension ID is `goranerhartic.lazydevhelper` (publisher `goranerhartic`).
+The extension ID is `LazyDevAI.lazydevhelper` (publisher `LazyDevAI`).
 
 1. Sign in at [open-vsx.org](https://open-vsx.org) with GitHub, sign the Publisher Agreement, and create an access token.
-2. Create the namespace (once): `npx ovsx create-namespace goranerhartic -p <token>`
+2. Create the namespace (once): `npx ovsx create-namespace LazyDevAI -p <token>`
 3. Claim ownership of the namespace via the Open VSX namespace-claim issue.
 4. Build and publish: `pnpm run package && pnpm dlx ovsx publish lazydevhelper-<version>.vsix -p <token>`
 
