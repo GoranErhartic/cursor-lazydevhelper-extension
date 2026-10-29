@@ -6,6 +6,15 @@
   "publisher": "goranerhartic",
   "icon": "image/icon.png",
   "license": "MIT",
+  "packageManager": "pnpm@12.4.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GoranErhartic/cursor-lazydevhelper-extension.git"
+  },
+  "homepage": "https://lazydev.ai",
+  "bugs": {
+    "url": "https://github.com/GoranErhartic/cursor-lazydevhelper-extension/issues"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -119,13 +128,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run build",
-    "build": "node esbuild.mjs",
+    "compile": "node esbuild.mjs",
+    "build": "pnpm run compile",
     "watch": "node esbuild.mjs --watch",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run && node test/smoke-commands.js",
-    "package": "vsce package --allow-missing-repository --no-dependencies"
+    "package": "npx --yes @vscode/vsce@3.9.2 package --no-dependencies",
+    "vscode:prepublish": "pnpm run compile"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
