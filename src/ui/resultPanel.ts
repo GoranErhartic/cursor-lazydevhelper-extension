@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ActionKind } from "../actions/prompts";
 import { renderMarkdownToHtml } from "./markdown";
+import { LOADING_LINES, LOADING_LINE_HOLD_MS, LOADING_TYPE_INTERVAL_MS } from "./loadingLines";
 
 export type ApplyTarget = {
   uri: vscode.Uri;
@@ -101,14 +102,14 @@ export class ResultPanel {
     const bodyHtml = hasContent
       ? renderMarkdownToHtml(this.accumulated)
       : this.abortHandler
-        ? getLoadingHtml(this.options.action)
+        ? getLoadingHtml()
         : renderMarkdownToHtml("_No response generated._");
 
     this.panel.webview.html = getWebviewHtml({
       nonce,
       title: this.options.title,
       bodyHtml,
-      loadingMessages: getLoadingMessages(this.options.action),
+      loadingMessages: LOADING_LINES,
       statusLine: this.statusLine,
       showApply,
       running: Boolean(this.abortHandler),
@@ -129,7 +130,7 @@ function getWebviewHtml(args: {
   nonce: string;
   title: string;
   bodyHtml: string;
-  loadingMessages: string[];
+  loadingMessages: readonly string[];
   statusLine: string;
   showApply: boolean;
   running: boolean;
@@ -186,8 +187,11 @@ function getWebviewHtml(args: {
       border: 1px solid var(--vscode-panel-border);
       border-radius: 4px;
       padding: 12px;
-      max-width: 420px;
+      max-width: 100%;
+      box-sizing: border-box;
     }
+    .loader-text { display: block; min-width: 0; }
+    .loader-text strong, .loader-text .loader-dots { display: inline; white-space: normal; }
     .spinner {
       width: 16px;
       height: 16px;
@@ -236,171 +240,65 @@ function getWebviewHtml(args: {
     document.getElementById("apply")?.addEventListener("click", () => vscode.postMessage({ type: "apply" }));
     document.getElementById("cancel")?.addEventListener("click", () => vscode.postMessage({ type: "cancel" }));
     const loadingEl = document.getElementById("loader-message");
-    if (loadingEl && Array.isArray(loadingMessages) && loadingMessages.length > 1) {
-      const now = Date.now();
+    if (loadingEl && Array.isArray(loadingMessages) && loadingMessages.length > 0) {
+      const holdMs = ${LOADING_LINE_HOLD_MS};
+      const typeMs = ${LOADING_TYPE_INTERVAL_MS};
       const state = vscode.getState() || {};
-      const hasValidIndex =
-        Number.isInteger(state.loaderIndex) &&
-        state.loaderIndex >= 0 &&
-        state.loaderIndex < loadingMessages.length;
-      let index = hasValidIndex ? state.loaderIndex : Math.floor(Math.random() * loadingMessages.length);
-      let nextSwitchAt = typeof state.nextSwitchAt === "number" ? state.nextSwitchAt : now + 2000;
-
-      const pickNextIndex = () => {
-        let next = index;
-        while (next === index && loadingMessages.length > 1) {
+      const pickIndex = (previous) => {
+        if (loadingMessages.length < 2) {
+          return 0;
+        }
+        let next = previous;
+        while (next === previous) {
           next = Math.floor(Math.random() * loadingMessages.length);
         }
-        index = next;
+        return next;
+      };
+      const isValid = (i) => Number.isInteger(i) && i >= 0 && i < loadingMessages.length;
+
+      let index = isValid(state.loaderIndex) ? state.loaderIndex : pickIndex(-1);
+      let nextSwitchAt = typeof state.nextSwitchAt === "number" ? state.nextSwitchAt : 0;
+
+      const typeLine = (text, done) => {
+        let i = 0;
+        loadingEl.textContent = "";
+        const step = () => {
+          i += 1;
+          loadingEl.textContent = text.slice(0, i);
+          if (i < text.length) {
+            setTimeout(step, typeMs);
+          } else {
+            done();
+          }
+        };
+        setTimeout(step, typeMs);
       };
 
-      if (now >= nextSwitchAt) {
-        pickNextIndex();
-        nextSwitchAt = now + 2000;
-      }
-
-      loadingEl.textContent = loadingMessages[index];
-      vscode.setState({ loaderIndex: index, nextSwitchAt });
-
-      const tick = () => {
-        pickNextIndex();
-        nextSwitchAt = Date.now() + 2000;
-        loadingEl.textContent = loadingMessages[index];
+      const showNext = () => {
+        index = pickIndex(index);
+        const line = loadingMessages[index];
+        nextSwitchAt = Date.now() + holdMs;
         vscode.setState({ loaderIndex: index, nextSwitchAt });
+        typeLine(line, () => {});
+        setTimeout(showNext, holdMs);
       };
-      setInterval(tick, 4500);
+
+      const remaining = nextSwitchAt - Date.now();
+      if (isValid(state.loaderIndex) && remaining > 0) {
+        // Panel was re-rendered mid-hold: show the current line instantly and keep the schedule.
+        loadingEl.textContent = loadingMessages[index];
+        setTimeout(showNext, remaining);
+      } else {
+        showNext();
+      }
     }
   </script>
 </body>
 </html>`;
 }
 
-function getLoadingMessages(action: ActionKind): string[] {
-  switch (action) {
-    case "analyze": {
-      return buildWittyLines(
-        [
-          "Scanning",
-          "Tracing",
-          "Mapping",
-          "Unpacking",
-          "Surveying",
-          "Decoding",
-          "Inspecting",
-          "Following",
-        ],
-        [
-          "code pathways",
-          "logic branches",
-          "control flow",
-          "dependency clues",
-          "edge cases",
-          "intent signals",
-          "runtime behavior hints",
-          "complexity hotspots",
-        ],
-        [
-          "with a magnifying glass",
-          "one breadcrumb at a time",
-          "without judging variable names",
-          "before the coffee cools",
-          "for your future self",
-          "like a polite detective",
-          "minus the dramatic soundtrack",
-          "and taking tidy notes",
-        ]
-      );
-    }
-    case "review": {
-      return buildWittyLines(
-        [
-          "Reviewing",
-          "Probing",
-          "Stress-testing",
-          "Double-checking",
-          "Hunting",
-          "Auditing",
-          "Cross-examining",
-          "Verifying",
-        ],
-        [
-          "bug magnets",
-          "risky assumptions",
-          "sharp corners",
-          "security blind spots",
-          "edge-case surprises",
-          "maintainability traps",
-          "correctness gaps",
-          "readability potholes",
-        ],
-        [
-          "with gentle skepticism",
-          "before they reach production",
-          "so future incidents stay fictional",
-          "with kindness and precision",
-          "while resisting nitpick overdrive",
-          "without breaking your flow",
-          "as your second pair of eyes",
-          "and writing useful notes",
-        ]
-      );
-    }
-    case "simplify": {
-      return buildWittyLines(
-        [
-          "Simplifying",
-          "Refactoring",
-          "Polishing",
-          "Tidying",
-          "Streamlining",
-          "Untangling",
-          "Smoothing",
-          "Clarifying",
-        ],
-        [
-          "busy code paths",
-          "nested logic knots",
-          "verbose patterns",
-          "complex expressions",
-          "hard-to-read sections",
-          "repeat-heavy blocks",
-          "naming rough edges",
-          "cognitive overhead",
-        ],
-        [
-          "into cleaner shape",
-          "without changing behavior",
-          "for kinder maintenance days",
-          "one neat pass at a time",
-          "so intent is obvious",
-          "with fewer brain cycles",
-          "for maximum clarity points",
-          "and less future confusion",
-        ]
-      );
-    }
-    default: {
-      const _exhaustive: never = action;
-      return _exhaustive;
-    }
-  }
-}
-
-function getLoadingHtml(action: ActionKind): string {
-  const first = escapeAttr(getLoadingMessages(action)[0] ?? "Waiting for response");
-  return `<div class="loader"><div class="spinner" aria-hidden="true"></div><div><strong id="loader-message">${first}</strong><span class="loader-dots"></span></div></div>`;
-}
-
-function buildWittyLines(starts: string[], middles: string[], endings: string[]): string[] {
-  const lines: string[] = [];
-  for (const start of starts) {
-    for (const middle of middles) {
-      for (const ending of endings) {
-        lines.push(`${start} ${middle} ${ending}`);
-      }
-    }
-  }
-  return lines;
+function getLoadingHtml(): string {
+  return `<div class="loader"><div class="spinner" aria-hidden="true"></div><div class="loader-text"><strong id="loader-message">Waiting for response</strong><span class="loader-dots"></span></div></div>`;
 }
 
 function escapeAttr(text: string): string {

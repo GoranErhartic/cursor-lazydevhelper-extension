@@ -19,7 +19,7 @@ async function loadSdk(): Promise<CursorSdk> {
     return runtimeRequire("@cursor/sdk") as CursorSdk;
   } catch {
     try {
-      return runtimeRequire("../vendor/cursor-sdk") as CursorSdk;
+      return runtimeRequire("./vendor/cursor-sdk") as CursorSdk;
     } catch {
       throw new ProviderError(
         "Cursor SDK is unavailable in this build. Reinstall dependencies and rebuild the extension.",

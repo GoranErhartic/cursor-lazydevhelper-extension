@@ -2,6 +2,7 @@ import * as esbuild from "esbuild";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createRequire } from "node:module";
+import { realpathSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 
@@ -20,6 +21,18 @@ async function vendorCursorSdk() {
     dereference: true,
     filter: (src) => !/\.d\.ts(\.map)?$|\.js\.map$/.test(src),
   });
+  // The packaged .vsix ships without node_modules (--no-dependencies), so the
+  // SDK's runtime requires must be vendored next to it.
+  // pnpm places the SDK's dependencies as siblings of its real path.
+  const sdkNodeModules = resolve(realpathSync(sdkRoot), "..", "..");
+  for (const dep of ["zod", "@bufbuild/protobuf"]) {
+    const depRoot = resolve(sdkNodeModules, dep);
+    await cp(depRoot, resolve(target, "node_modules", dep), {
+      recursive: true,
+      dereference: true,
+      filter: (src) => !/\.d\.[mc]?ts(\.map)?$|\.map$/.test(src),
+    });
+  }
 }
 
 /** Lets VS Code/Cursor detect when the watch build is ready (preLaunchTask). */

@@ -2,7 +2,7 @@
   "name": "lazydevhelper",
   "displayName": "LazyDevHelper",
   "description": "Right-click AI actions on selected code: analyze, review, and simplify.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "LazyDevAI",
   "icon": "image/icon.png",
   "license": "MIT",
@@ -138,16 +138,16 @@
     "vscode:prepublish": "pnpm run compile"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.20.5",
     "@types/vscode": "^1.90.0",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
-    "@vscode/test-electron": "^2.4.1",
-    "@vscode/vsce": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^4.1.0",
     "esbuild": "^0.28.2",
-    "eslint": "^9.16.0",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.0",
+    "eslint": "^9.39.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.5"
   },
   "dependencies": {
