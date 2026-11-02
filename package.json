@@ -1,8 +1,8 @@
 {
-  "name": "lazydevhelper",
-  "displayName": "LazyDevHelper",
+  "name": "aicodehelper",
+  "displayName": "LazyDev AI Code Helper",
   "description": "Right-click AI actions on selected code: analyze, review, and simplify.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "LazyDevAI",
   "icon": "image/icon.png",
   "license": "MIT",
