@@ -20,9 +20,10 @@ async function loadSdk(): Promise<CursorSdk> {
   } catch {
     try {
       return runtimeRequire("./vendor/cursor-sdk") as CursorSdk;
-    } catch {
+    } catch (err) {
+      const cause = err instanceof Error ? err.message.split("\n")[0] : String(err);
       throw new ProviderError(
-        "Cursor SDK is unavailable in this build. Reinstall dependencies and rebuild the extension.",
+        `Cursor SDK is unavailable in this build (${cause}). Reinstall dependencies and rebuild the extension.`,
         "api"
       );
     }
